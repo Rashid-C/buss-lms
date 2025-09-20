@@ -7,6 +7,41 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+interface featureProps {
+  title: string
+  description: string
+  icon: string
+}
+
+const features: featureProps[] = [
+  {
+    title: 'Comprehensive Courses',
+    description:
+      'Access a wide range of courses across various subjects, designed by industry experts.',
+    icon: '📚',
+  },
+
+  {
+    title: 'Inteactive Learning',
+    description:
+      'Engage with interactive content, quizzes, and assignments to enhance your learning experience.',
+    icon: '🧑‍🏫',
+  },
+  {
+    title: 'Progress Tracking',
+    description:
+      'Monitor your learning journey with detailed progress reports and analytics.',
+    icon: '📈',
+  },
+  {
+    title: 'Community Support',
+    description:
+      'Join a vibrant community of learners and educators to share knowledge and collaborate.',
+    icon: '🤝',
+  },
+]
 
 export default function Home() {
   const router = useRouter()
@@ -54,6 +89,20 @@ export default function Home() {
             </Link>
           </div>
         </div>
+      </section>
+
+      <section className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 '>
+        {features.map((feature, index) => (
+          <Card key={index} className='hover:shadow-lg transition-shadow'>
+            <CardHeader>
+              <div className='text-4xl mb-4'>{feature.icon}</div>
+              <CardTitle>{feature.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className='text-muted-foreground'>{feature.description}</p>
+            </CardContent>
+          </Card>
+        ))}
       </section>
     </>
   )

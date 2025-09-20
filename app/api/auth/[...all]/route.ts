@@ -16,30 +16,26 @@ import { toNextJsHandler } from 'better-auth/next-js'
 import { NextRequest } from 'next/server'
 
 const emailOptions = {
-  mode: 'LIVE', // will block requests. Use "DRY_RUN" to log only
-  // Block emails that are disposable, invalid, or have no MX records
+  mode: 'LIVE',
   block: ['DISPOSABLE', 'INVALID', 'NO_MX_RECORDS'],
 } satisfies EmailOptions
 
 const botOptions = {
   mode: 'LIVE',
-  // configured with a list of bots to allow from
-  // https://arcjet.com/bot-list
-  allow: [], // prevents bots from submitting the form
+
+  allow: [],
 } satisfies BotOptions
 
 const rateLimitOptions = {
   mode: 'LIVE',
-  interval: '2m', // counts requests over a 2 minute sliding window
-  max: 5, // allows 5 submissions within the window
+  interval: '2m',
+  max: 5,
 } satisfies SlidingWindowRateLimitOptions<[]>
 
 const signupOptions = {
   email: emailOptions,
-  // uses a sliding window rate limit
   bots: botOptions,
-  // It would be unusual for a form to be submitted more than 5 times in 10
-  // minutes from the same IP address
+
   rateLimit: rateLimitOptions,
 } satisfies ProtectSignupOptions<[]>
 
@@ -48,38 +44,27 @@ async function protect(req: NextRequest): Promise<ArcjetDecision> {
     headers: req.headers,
   })
 
-  // If the user is logged in we'll use their ID as the identifier. This
-  // allows limits to be applied across all devices and sessions (you could
-  // also use the session ID). Otherwise, fall back to the IP address.
   let userId: string
   if (session?.user.id) {
     userId = session.user.id
   } else {
-    userId = ip(req) || '127.0.0.1' // Fall back to local IP if none
+    userId = ip(req) || '127.0.0.1'
   }
 
-  // If this is a signup then use the special protectSignup rule
-  // See https://docs.arcjet.com/signup-protection/quick-start
   if (req.nextUrl.pathname.startsWith('/api/auth/sign-up')) {
-    // Better-Auth reads the body, so we need to clone the request preemptively
     const body = await req.clone().json()
 
-    // If the email is in the body of the request then we can run
-    // the email validation checks as well. See
-    // https://www.better-auth.com/docs/concepts/hooks#example-enforce-email-domain-restriction
     if (typeof body.email === 'string') {
       return arcjet
         .withRule(protectSignup(signupOptions))
         .protect(req, { email: body.email, fingerprint: userId })
     } else {
-      // Otherwise use rate limit and detect bot
       return arcjet
         .withRule(detectBot(botOptions))
         .withRule(slidingWindow(rateLimitOptions))
         .protect(req, { fingerprint: userId })
     }
   } else {
-    // For all other auth requests
     return arcjet
       .withRule(detectBot(botOptions))
       .protect(req, { fingerprint: userId })
@@ -90,7 +75,6 @@ const authHandlers = toNextJsHandler(auth.handler)
 
 export const { GET } = authHandlers
 
-// Wrap the POST handler with Arcjet protections
 export const POST = async (req: NextRequest) => {
   const decision = await protect(req)
 
@@ -110,8 +94,6 @@ export const POST = async (req: NextRequest) => {
         message =
           'Your email domain does not have an MX record. Is there a typo?'
       } else {
-        // This is a catch all, but the above should be exhaustive based on the
-        // configured rules.
         message = 'Invalid email.'
       }
 

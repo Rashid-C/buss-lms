@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import Logo from '@/public/logo.svg'
+import { ThemeToggle } from '@/components/ui/themeToggle'
 
 const navigationItems = [
   { name: 'Home', href: '/' },
@@ -18,7 +19,7 @@ export function Navbar() {
           <span className='font-bold'>Business LMS</span>
         </Link>
 
-        <nav>
+        <nav className='hidden md:flex md:flex-1 md:items-center md:justify-between'>
           <div className='flex items-center space-x-2'>
             {navigationItems.map((item) => (
               <Link
@@ -29,6 +30,10 @@ export function Navbar() {
                 {item.name}
               </Link>
             ))}
+          </div>
+
+          <div>
+            <ThemeToggle />
           </div>
         </nav>
       </div>

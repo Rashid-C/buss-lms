@@ -40,7 +40,11 @@ export function Navbar() {
           <div className='flex items-center space-x-4'>
             <ThemeToggle />
             {isPending ? null : session ? (
-              <UserDropdown />
+              <UserDropdown
+                email={session.user.email}
+                image={session.user.image || ''}
+                name={session.user.name}
+              />
             ) : (
               <>
                 <Link

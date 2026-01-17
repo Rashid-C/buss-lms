@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Card, CardContent } from '../ui/card';
 import { cn } from '@/lib/utils';
-import { RenderEmptyState } from './RenderState';
+import { RenderEmptyState, RenderErrorState } from './RenderState';
 
 export function Uploader() {
 
@@ -20,7 +20,7 @@ export function Uploader() {
             <CardContent className='flex items-center justify-center h-full w-full p-4'>
 
                 <input {...getInputProps()} />
-                <RenderEmptyState isDragActive={isDragActive} />
+                <RenderErrorState  />
             </CardContent>
         </Card>
     )

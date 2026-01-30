@@ -1,21 +1,63 @@
 'use client'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { FileRejection, useDropzone } from 'react-dropzone'
 import { Card, CardContent } from '../ui/card'
 import { cn } from '@/lib/utils'
-import { RenderEmptyState, RenderErrorState } from './RenderState'
+import { RenderEmptyState } from './RenderState'
 import { toast } from 'sonner'
+import { v4 as uuidv4 } from 'uuid';
+
+interface UploaderState {
+    id: string | null
+    file: File | null
+    uploading: boolean
+    progress: number
+    key?: string
+    idDeleting: boolean
+    error: boolean
+    objectUrl?: string
+    fileType: 'image' | 'video'
+}
 
 export function Uploader() {
+    
+    const [fileState, setFileState] = useState<UploaderState>({
+        error: false,
+        file: null,
+        id: null,
+        uploading: false,
+        progress: 0,
+        idDeleting: false,
+        fileType: 'image',
+    })
+
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        console.log(acceptedFiles)
+
+        if (acceptedFiles.length > 0) {
+            const file = acceptedFiles[0];
+            setFileState({
+                file: file,
+                uploading: false,
+                progress: 0,
+                objectUrl: URL.createObjectURL(file),
+                error: false,
+                id: uuidv4(),
+                idDeleting: false,
+                fileType: "image",
+            })
+        }
+
     }, [])
 
     function rejectedfiles(fileRejection: FileRejection[]) {
         if (fileRejection.length) {
-            const tooManyFiles = fileRejection.find((rejection) => rejection.errors[0].code === 'too-many-files')
+            const tooManyFiles = fileRejection.find(
+                (rejection) => rejection.errors[0].code === 'too-many-files',
+            )
 
-            const fileSizeToBig = fileRejection.find((rejection) => rejection.errors[0].code === 'file-too-large')
+            const fileSizeToBig = fileRejection.find(
+                (rejection) => rejection.errors[0].code === 'file-too-large',
+            )
 
             if (fileSizeToBig) {
                 toast.error('File size exceeds the 5MB limit.')
@@ -25,7 +67,6 @@ export function Uploader() {
                 toast.error('You can only upload one file at a time.')
             }
         }
-
     }
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -35,7 +76,6 @@ export function Uploader() {
         multiple: false,
         maxSize: 5 * 1024 * 1024, // 5 MB
         onDropRejected: rejectedfiles,
-
     })
     return (
         <Card
